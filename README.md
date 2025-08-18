@@ -50,13 +50,6 @@ PAPER_TRADING=true
 PAPER_BALANCE=10000
 ```
 
-## Architecture
-
-The bot follows SOLID principles:
-- **Single Responsibility**: Each method has one clear purpose
-- **Open/Closed**: Easy to extend with new features without modifying core logic
-- **DRY**: Reusable methods for common operations
-
 ## Warning
 
 This bot will automatically buy tokens as soon as they are listed. Use at your own risk and only with funds you can afford to lose.
