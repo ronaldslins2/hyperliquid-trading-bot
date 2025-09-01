@@ -4,6 +4,8 @@
 
 This project is under active development. Feel free to submit questions, suggestions, and issues through GitHub.
 
+You're welcome to use the best docs on Hyperliquid API via [ Chainstack Developer Portal MCP server](https://docs.chainstack.com/docs/developer-portal-mcp-server).
+
 ## 🚀 Quick start
 
 ### **Prerequisites**
