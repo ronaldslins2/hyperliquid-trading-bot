@@ -4,7 +4,7 @@
 
 This project is under active development. Feel free to submit questions, suggestions, and issues through GitHub.
 
-You're welcome to use the best docs on Hyperliquid API via [ Chainstack Developer Portal MCP server](https://docs.chainstack.com/docs/developer-portal-mcp-server).
+You're welcome to use the best docs on Hyperliquid API via [Chainstack Developer Portal MCP server](https://docs.chainstack.com/docs/developer-portal-mcp-server).
 
 ## 🚀 Quick start
 
@@ -19,7 +19,7 @@ You're welcome to use the best docs on Hyperliquid API via [ Chainstack Develope
 git clone https://github.com/chainstacklabs/hyperliquid-trading-bot
 cd hyperliquid-trading-bot
 
-# Install dependencies using UV
+# Install dependencies using uv
 uv sync
 
 # Set up environment variables
@@ -114,21 +114,21 @@ uv run learning_examples/04_trading/cancel_orders.py
 uv run learning_examples/05_websockets/realtime_prices.py
 ```
 
-## 🛡️ Exit Strategies
+## 🛡️ Exit strategies
 
 The bot includes automated risk management and position exit features:
 
-**Position-Level Exits:**
-- **Stop Loss**: Automatically close positions when loss exceeds configured percentage (1-20%)
-- **Take Profit**: Automatically close positions when profit exceeds configured percentage (5-100%)
+**Position-level exits:**
+- **Stop loss**: Automatically close positions when loss exceeds configured percentage (1-20%)
+- **Take profit**: Automatically close positions when profit exceeds configured percentage (5-100%)
 
-**Account-Level Protection:**
-- **Max Drawdown**: Stop all trading when account-level losses exceed threshold (5-50%)
-- **Position Size Limits**: Prevent individual positions from exceeding percentage of account (10-100%)
+**Account-level protection:**
+- **Max drawdown**: Stop all trading when account-level losses exceed threshold (5-50%)
+- **Position size limits**: Prevent individual positions from exceeding percentage of account (10-100%)
 
-**Operational Exits:**
-- **Grid Rebalancing**: Cancel orders and recreate grid when price moves outside range
-- **Graceful Shutdown**: Cancel pending orders on bot termination (positions preserved by default)
+**Operational exits:**
+- **Grid rebalancing**: Cancel orders and recreate grid when price moves outside range
+- **Graceful shutdown**: Cancel pending orders on bot termination (positions preserved by default)
 
 All exit strategies are configurable per bot and disabled by default for safety.
 
