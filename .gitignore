@@ -7,5 +7,83 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+.venv/
+venv/
+env/
+
+# Environment and configuration files
 .env
+.env.local
+.env.production
+.env.development
+
+# Private keys and secrets
+.private_key
+*.key
+*.pem
+private_keys/
+secrets/
+
+# Trading data and logs
+data/
+logs/
+*.log
+*.csv
+trade_history/
+performance_data/
+
+# Bot state and cache files
+state/
+cache/
+*.json.backup
+*_state.json
+*_backup.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+.DS_Store
+Thumbs.db
+
+# OS-specific files
+*.DS_Store
+*.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Profiling data
+.prof
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*~

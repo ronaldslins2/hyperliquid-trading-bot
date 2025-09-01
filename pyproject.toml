@@ -1,10 +1,28 @@
 [project]
-name = "hyperliquid-examples"
+name = "hyperliquid-trading-bot"
 version = "0.1.0"
-description = "Hyperliquid spot token sniper bot"
+description = "Extensible trading bot for Hyperliquid DEX"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "hyperliquid-python-sdk>=0.17.0",
     "eth-account>=0.10.0",
+    "pyyaml>=6.0",
+    "typing-extensions>=4.0",
+    "psutil>=7.0.0",
+    "httpx>=0.28.1",
+    "python-dotenv>=1.1.1",
+    "websockets>=15.0.1",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-mock>=3.0",
+]
+dev = [
+    "black",
+    "isort",
+    "mypy",
 ]

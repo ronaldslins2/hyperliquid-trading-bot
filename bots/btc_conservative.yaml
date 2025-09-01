@@ -1,0 +1,40 @@
+# CONSERVATIVE STRATEGY DEFINITION:
+# - LOW RISK: Uses only 10% of account balance to minimize potential losses
+# - NARROW RANGE: ±5% price range reduces exposure to large price swings  
+# - FEWER LEVELS: 10 grid levels for simpler management
+# - SLOWER REBALANCING: Only rebalances if price moves >12% outside range
+
+name: "btc_conservative_clean"
+active: true  # Options: true/false - Enable/disable this trading strategy
+
+account:
+  max_allocation_pct: 10.0  # Uses only 10% of total account (range: 1-100%)
+
+grid:
+  symbol: "BTC"    # Trading pair symbol (e.g., "BTC", "ETH", "SOL")
+  levels: 10       # Number of buy/sell orders
+  
+  price_range:
+    # Mode options:
+    # - "auto": Calculate range automatically from current price
+    # - "manual": Set fixed upper/lower price bounds
+    mode: "auto"
+    auto:
+      range_pct: 5.0  # ±5% from center price (conservative: 3-8%, aggressive: 10-20%)
+    # manual:  # Only used when mode is "manual"
+    #   upper_price: 45000.0
+    #   lower_price: 35000.0
+
+risk_management:
+  rebalance:
+    # Rebalance threshold: when to recreate the grid
+    # Lower values = more frequent rebalancing = higher fees but tighter control
+    price_move_threshold_pct: 12.0  # Rebalance if price moves >12% outside range
+
+monitoring:
+  # Log level options (from most to least verbose):
+  # - "DEBUG": All messages, detailed execution info, good for troubleshooting
+  # - "INFO": Important events, order placements, strategy changes (recommended)
+  # - "WARNING": Only warnings and errors, minimal output
+  # - "ERROR": Only critical errors that stop execution
+  log_level: "INFO"
