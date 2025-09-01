@@ -7,6 +7,10 @@
 name: "btc_conservative_clean"
 active: true  # Options: true/false - Enable/disable this trading strategy
 
+exchange:
+  type: "hyperliquid"  # Exchange type (options: "hyperliquid", "hl")
+  testnet: true        # Options: true/false - Use testnet for development
+
 account:
   max_allocation_pct: 10.0  # Uses only 10% of total account (range: 1-100%)
 

@@ -96,8 +96,8 @@ class GridTradingBot:
         
         return {
             "exchange": {
-                "type": "hyperliquid",
-                "testnet": testnet
+                "type": self.config.exchange.type,
+                "testnet": self.config.exchange.testnet
             },
             "strategy": {
                 "type": "basic_grid",  # Default to basic grid

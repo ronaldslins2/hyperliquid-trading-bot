@@ -12,7 +12,7 @@ import logging
 
 from interfaces.strategy import TradingStrategy, TradingSignal, SignalType, MarketData, Position
 from interfaces.exchange import ExchangeAdapter, Order, OrderSide, OrderType, OrderStatus
-from exchanges.hyperliquid import HyperliquidAdapter, HyperliquidMarketData
+from exchanges.hyperliquid import HyperliquidMarketData
 from core.key_manager import key_manager
 from core.risk_manager import RiskManager, RiskEvent, RiskAction, AccountMetrics
 
@@ -86,9 +86,6 @@ class TradingEngine:
         """Initialize exchange adapter"""
         
         exchange_config = self.config.get("exchange", {})
-        
-        # For now, only Hyperliquid is supported
-        # Easy to extend by checking exchange_config["type"] and creating different adapters
         testnet = exchange_config.get("testnet", True)
         
         try:
@@ -99,7 +96,11 @@ class TradingEngine:
             self.logger.error(f"❌ {e}")
             return False
         
-        self.exchange = HyperliquidAdapter(private_key, testnet)
+        # Use factory pattern to create exchange adapter
+        from exchanges import create_exchange_adapter
+        exchange_type = exchange_config.get("type", "hyperliquid")
+        exchange_config_with_key = {**exchange_config, "private_key": private_key}
+        self.exchange = create_exchange_adapter(exchange_type, exchange_config_with_key)
         
         if await self.exchange.connect():
             self.logger.info("✅ Exchange adapter connected")

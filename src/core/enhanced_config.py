@@ -200,6 +200,18 @@ class MarketDataConfig:
 
 
 @dataclass
+class ExchangeConfig:
+    """Exchange configuration settings"""
+    type: str = "hyperliquid"               # Exchange type (hyperliquid, hl, etc.)
+    testnet: bool = True                    # Use testnet for development
+    
+    def validate(self) -> None:
+        """Validate exchange configuration"""
+        if not self.type:
+            raise ValueError("exchange type cannot be empty")
+
+
+@dataclass
 class MonitoringConfig:
     """Logging and monitoring settings"""
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
@@ -220,6 +232,7 @@ class EnhancedBotConfig:
     """Complete enhanced bot configuration with all assumptions explicit"""
     name: str
     active: bool = True
+    exchange: ExchangeConfig = field(default_factory=ExchangeConfig)
     account: AccountConfig = field(default_factory=AccountConfig)
     grid: GridConfig = field(default_factory=GridConfig)
     risk_management: RiskManagementConfig = field(default_factory=RiskManagementConfig)
@@ -240,6 +253,7 @@ class EnhancedBotConfig:
             raise ValueError("Bot name cannot be empty")
         
         # Validate all sections
+        self.exchange.validate()
         self.account.validate()
         self.grid.validate()
         self.risk_management.validate()
@@ -310,6 +324,9 @@ class EnhancedBotConfig:
     def _dict_to_dataclass(cls, data: Dict[str, Any]) -> 'EnhancedBotConfig':
         """Convert dictionary to dataclass recursively"""
         # Handle nested structures
+        if 'exchange' in data:
+            data['exchange'] = ExchangeConfig(**data['exchange'])
+            
         if 'account' in data:
             data['account'] = AccountConfig(**data['account'])
         
