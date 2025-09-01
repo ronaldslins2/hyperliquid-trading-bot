@@ -16,8 +16,8 @@ You're welcome to use the best docs on Hyperliquid API via [ Chainstack Develope
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/hyperliquid-examples.git
-cd hyperliquid-examples
+git clone https://github.com/chainstacklabs/hyperliquid-trading-bot
+cd hyperliquid-trading-bot
 
 # Install dependencies using UV
 uv sync
