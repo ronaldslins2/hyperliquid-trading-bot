@@ -1,8 +1,10 @@
-> **⚠️ Disclaimer**: This project is under active development. Feel free to submit questions, suggestions, and issues through GitHub.
+## Extensible grid trading bot for [Hyperliquid DEX](https://hyperliquid.xyz)
 
-An extensible grid trading bot for [Hyperliquid DEX](https://hyperliquid.xyz).
+> ⚠️ This software is for educational and research purposes. Trading cryptocurrencies involves substantial risk of loss. Never trade with funds you cannot afford to lose. Always thoroughly test strategies on testnet before live deployment.**
 
-## 🚀 Quick Start
+This project is under active development. Feel free to submit questions, suggestions, and issues through GitHub.
+
+## 🚀 Quick start
 
 ### **Prerequisites**
 - [UV Package Manager](https://github.com/astral-sh/uv)
@@ -34,7 +36,7 @@ HYPERLIQUID_TESTNET=true
 
 The bot comes with a pre-configured conservative BTC grid strategy in `bots/btc_conservative.yaml`. Review and adjust parameters as needed.
 
-### **Running the Bot**
+### **Running the bot**
 
 ```bash
 # Auto-discover and run the first active configuration
@@ -47,7 +49,7 @@ uv run src/run_bot.py --validate
 uv run src/run_bot.py bots/btc_conservative.yaml
 ```
 
-## 📚 Learning Examples
+## 📚 Learning examples
 
 Master the Hyperliquid API with standalone educational scripts:
 
@@ -101,7 +103,7 @@ monitoring:
 
 ## 🔧 Development
 
-### **Package Management**
+### **Package management**
 This project uses [UV](https://github.com/astral-sh/uv) for fast, reliable dependency management:
 
 ```bash
@@ -123,11 +125,3 @@ uv run src/run_bot.py --validate
 # Run bot in testnet mode (default)
 uv run src/run_bot.py
 ```
-
-## ⚠️ Disclaimer
-
-**This software is for educational and research purposes. Trading cryptocurrencies involves substantial risk of loss. Never trade with funds you cannot afford to lose. Always thoroughly test strategies on testnet before live deployment.**
-
----
-
-*Built for the Hyperliquid ecosystem with ❤️*
