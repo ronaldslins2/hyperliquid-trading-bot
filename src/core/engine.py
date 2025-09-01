@@ -14,6 +14,7 @@ from interfaces.strategy import TradingStrategy, TradingSignal, SignalType, Mark
 from interfaces.exchange import ExchangeAdapter, Order, OrderSide, OrderType, OrderStatus
 from exchanges.hyperliquid import HyperliquidAdapter, HyperliquidMarketData
 from core.key_manager import key_manager
+from core.risk_manager import RiskManager, RiskEvent, RiskAction, AccountMetrics
 
 
 class TradingEngine:
@@ -37,6 +38,7 @@ class TradingEngine:
         self.strategy: Optional[TradingStrategy] = None
         self.exchange: Optional[ExchangeAdapter] = None 
         self.market_data: Optional[HyperliquidMarketData] = None
+        self.risk_manager: Optional[RiskManager] = None
         
         # State tracking
         self.current_positions: List[Position] = []
@@ -67,6 +69,10 @@ class TradingEngine:
                 
             # Initialize strategy
             if not self._initialize_strategy():
+                return False
+                
+            # Initialize risk manager
+            if not self._initialize_risk_manager():
                 return False
             
             self.logger.info("✅ Trading engine initialized successfully")
@@ -133,6 +139,18 @@ class TradingEngine:
             self.logger.error(f"❌ Failed to initialize strategy: {e}")
             return False
     
+    def _initialize_risk_manager(self) -> bool:
+        """Initialize risk manager"""
+        
+        try:
+            self.risk_manager = RiskManager(self.config)
+            self.logger.info("✅ Risk manager initialized")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"❌ Failed to initialize risk manager: {e}")
+            return False
+    
     async def start(self) -> None:
         """Start the trading engine"""
         
@@ -159,9 +177,30 @@ class TradingEngine:
         if self.strategy:
             self.strategy.stop()
         
-        # Cancel pending orders
+        # Handle positions and orders cleanup
         if self.exchange:
-            await self.exchange.cancel_all_orders()
+            try:
+                # Get current positions before shutdown
+                current_positions = await self.exchange.get_positions()
+                
+                if current_positions:
+                    self.logger.info(f"📊 Found {len(current_positions)} open positions")
+                    
+                    # Option 1: Close all positions (more aggressive)
+                    # for pos in current_positions:
+                    #     await self.exchange.close_position(pos.asset)
+                    #     self.logger.info(f"✅ Closed position: {pos.asset}")
+                    
+                    # Option 2: Just cancel orders and leave positions (more conservative)
+                    self.logger.info("⚠️ Leaving positions open - only cancelling orders")
+                
+                # Cancel all pending orders
+                cancelled_orders = await self.exchange.cancel_all_orders()
+                if cancelled_orders > 0:
+                    self.logger.info(f"✅ Cancelled {cancelled_orders} pending orders")
+                    
+            except Exception as e:
+                self.logger.error(f"❌ Error during cleanup: {e}")
         
         # Disconnect components
         if self.market_data:
@@ -178,9 +217,16 @@ class TradingEngine:
             return
         
         try:
+            # Update current positions from exchange
+            self.current_positions = await self.exchange.get_positions()
+            
             # Get current balance
             balance_info = await self.exchange.get_balance("USD")  # Assuming USD balance
             balance = balance_info.available
+            
+            # Risk management check
+            if self.risk_manager:
+                await self._handle_risk_events(market_data)
             
             # Generate trading signals from strategy
             signals = self.strategy.generate_signals(market_data, self.current_positions, balance)
@@ -191,6 +237,86 @@ class TradingEngine:
                 
         except Exception as e:
             self.logger.error(f"❌ Error handling price update: {e}")
+    
+    async def _handle_risk_events(self, market_data: MarketData) -> None:
+        """Handle risk management events"""
+        
+        try:
+            # Get account metrics
+            account_metrics_data = await self.exchange.get_account_metrics()
+            account_metrics = AccountMetrics(
+                total_value=account_metrics_data.get("total_value", 0.0),
+                total_pnl=account_metrics_data.get("total_pnl", 0.0),
+                unrealized_pnl=account_metrics_data.get("unrealized_pnl", 0.0),
+                realized_pnl=account_metrics_data.get("realized_pnl", 0.0),
+                drawdown_pct=account_metrics_data.get("drawdown_pct", 0.0),
+                positions_count=account_metrics_data.get("positions_count", 0),
+                largest_position_pct=account_metrics_data.get("largest_position_pct", 0.0)
+            )
+            
+            # Evaluate risk events
+            market_data_dict = {market_data.asset: market_data}
+            risk_events = self.risk_manager.evaluate_risks(
+                self.current_positions,
+                market_data_dict,
+                account_metrics
+            )
+            
+            # Handle risk events
+            for event in risk_events:
+                await self._execute_risk_action(event)
+                
+        except Exception as e:
+            self.logger.error(f"❌ Error handling risk events: {e}")
+    
+    async def _execute_risk_action(self, event: RiskEvent) -> None:
+        """Execute action based on risk event"""
+        
+        try:
+            self.logger.warning(f"🚨 Risk Event: {event.reason}")
+            
+            if event.action == RiskAction.CLOSE_POSITION:
+                success = await self.exchange.close_position(event.asset)
+                if success:
+                    self.logger.info(f"✅ Position closed for {event.asset}")
+                else:
+                    self.logger.error(f"❌ Failed to close position for {event.asset}")
+                    
+            elif event.action == RiskAction.REDUCE_POSITION:
+                # For now, close 50% of position
+                reduction_pct = 0.5
+                current_positions = await self.exchange.get_positions()
+                for pos in current_positions:
+                    if pos.asset == event.asset:
+                        reduce_size = abs(pos.size) * reduction_pct
+                        success = await self.exchange.close_position(event.asset, reduce_size)
+                        if success:
+                            self.logger.info(f"✅ Position reduced by {reduction_pct*100}% for {event.asset}")
+                        break
+                        
+            elif event.action == RiskAction.CANCEL_ORDERS:
+                cancelled = await self.exchange.cancel_all_orders()
+                self.logger.info(f"✅ Cancelled {cancelled} orders")
+                
+            elif event.action == RiskAction.PAUSE_TRADING:
+                self.logger.critical(f"⏸️ Trading paused due to: {event.reason}")
+                if self.strategy:
+                    self.strategy.is_active = False
+                    
+            elif event.action == RiskAction.EMERGENCY_EXIT:
+                self.logger.critical(f"🚨 EMERGENCY EXIT: {event.reason}")
+                # Get fresh positions from exchange and close all
+                current_positions = await self.exchange.get_positions()
+                for pos in current_positions:
+                    await self.exchange.close_position(pos.asset)
+                # Cancel all orders
+                await self.exchange.cancel_all_orders()
+                # Stop trading
+                if self.strategy:
+                    self.strategy.is_active = False
+                    
+        except Exception as e:
+            self.logger.error(f"❌ Error executing risk action for {event.rule_name}: {e}")
     
     async def _execute_signal(self, signal: TradingSignal) -> None:
         """Execute a trading signal"""
@@ -287,7 +413,9 @@ class TradingEngine:
             "strategy": self.strategy.get_status() if self.strategy else None,
             "exchange": self.exchange.get_status() if self.exchange else None,
             "market_data": self.market_data.get_status() if self.market_data else None,
+            "risk_manager": self.risk_manager.get_status() if self.risk_manager else None,
             "executed_trades": self.executed_trades,
             "pending_orders": len(self.pending_orders),
+            "current_positions": len(self.current_positions),
             "total_pnl": self.total_pnl
         }

@@ -23,7 +23,7 @@ This is a professional-grade automated grid trading system for Hyperliquid DEX s
 - **Spot trading** - Direct asset ownership (cash trading)
 - **Perpetuals (perps)** - Leveraged derivatives trading  
 - **Grid trading strategies** - Automated buy/sell orders across price ranges
-- **Conservative risk management** - Configurable position sizing and rebalancing
+- **Risk management** - Stop loss, take profit, drawdown limits, and position sizing
 - **Real-time market data** - WebSocket price feeds and order book data
 
 The codebase follows SOLID principles without overcomplicating the implementation.
@@ -39,6 +39,7 @@ The codebase follows SOLID principles without overcomplicating the implementatio
 │   │   ├── engine.py             # Main trading engine
 │   │   ├── enhanced_config.py    # Configuration management
 │   │   ├── key_manager.py        # Private key management
+│   │   ├── risk_manager.py       # Risk management and exit strategies
 │   │   └── endpoint_router.py    # API endpoint routing
 │   ├── strategies/               # Trading strategies
 │   │   └── grid/
@@ -69,7 +70,7 @@ Each configuration includes:
 - `name` - Unique bot identifier
 - `account` - Account allocation settings
 - `grid` - Grid strategy parameters (symbol, levels, price range)
-- `risk_management` - Rebalancing thresholds
+- `risk_management` - Stop loss, take profit, drawdown limits, position sizing, and rebalancing thresholds
 - `monitoring` - Logging and monitoring settings
 
 **Configuration comments provide guidance:**

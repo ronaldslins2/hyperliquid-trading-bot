@@ -186,6 +186,45 @@ class ExchangeAdapter(ABC):
         """
         pass
     
+    # Position management methods (optional - implement if exchange supports positions)
+    
+    async def get_positions(self) -> List['Position']:
+        """
+        Get all current positions.
+        
+        Returns:
+            List of current positions (empty if not supported)
+        """
+        return []
+    
+    async def close_position(self, asset: str, size: Optional[float] = None) -> bool:
+        """
+        Close a position (market sell/buy to close).
+        
+        Args:
+            asset: Asset symbol
+            size: Size to close (None = close entire position)
+            
+        Returns:
+            True if close order placed successfully
+        """
+        return False
+    
+    async def get_account_metrics(self) -> Dict[str, Any]:
+        """
+        Get account-level metrics for risk assessment.
+        
+        Returns:
+            Dictionary with account metrics (total_value, pnl, drawdown, etc.)
+        """
+        return {
+            "total_value": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0,
+            "realized_pnl": 0.0,
+            "drawdown_pct": 0.0
+        }
+    
     # Optional methods with default implementations
     
     async def get_open_orders(self) -> List[Order]:

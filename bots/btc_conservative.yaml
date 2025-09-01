@@ -26,6 +26,18 @@ grid:
     #   lower_price: 35000.0
 
 risk_management:
+  # Stop Loss: Automatically close positions when loss exceeds threshold
+  stop_loss_enabled: false        # Options: true/false - Enable automatic stop loss
+  stop_loss_pct: 8.0             # Percentage loss before closing position (range: 1-20%)
+  
+  # Take Profit: Automatically close positions when profit exceeds threshold  
+  take_profit_enabled: false      # Options: true/false - Enable automatic take profit
+  take_profit_pct: 25.0          # Percentage profit before closing position (range: 5-100%)
+  
+  # Account Protection: Portfolio-level risk controls
+  max_drawdown_pct: 15.0         # Stop all trading if account drawdown exceeds % (range: 5-50%)
+  max_position_size_pct: 40.0    # Maximum position size as % of account (range: 10-100%)
+  
   rebalance:
     # Rebalance threshold: when to recreate the grid
     # Lower values = more frequent rebalancing = higher fees but tighter control

@@ -72,6 +72,17 @@ grid:
       range_pct: 5.0      # ±5% price range (conservative)
 
 risk_management:
+  # Exit Strategies
+  stop_loss_enabled: false      # Auto-close positions on loss threshold
+  stop_loss_pct: 8.0           # Loss % before closing (1-20%)
+  take_profit_enabled: false   # Auto-close positions on profit threshold
+  take_profit_pct: 25.0        # Profit % before closing (5-100%)
+  
+  # Account Protection
+  max_drawdown_pct: 15.0       # Stop trading on account drawdown % (5-50%)
+  max_position_size_pct: 40.0  # Max position as % of account (10-100%)
+  
+  # Grid Rebalancing
   rebalance:
     price_move_threshold_pct: 12.0  # Rebalance trigger
 
@@ -102,6 +113,24 @@ uv run learning_examples/04_trading/cancel_orders.py
 # Real-time data
 uv run learning_examples/05_websockets/realtime_prices.py
 ```
+
+## 🛡️ Exit Strategies
+
+The bot includes automated risk management and position exit features:
+
+**Position-Level Exits:**
+- **Stop Loss**: Automatically close positions when loss exceeds configured percentage (1-20%)
+- **Take Profit**: Automatically close positions when profit exceeds configured percentage (5-100%)
+
+**Account-Level Protection:**
+- **Max Drawdown**: Stop all trading when account-level losses exceed threshold (5-50%)
+- **Position Size Limits**: Prevent individual positions from exceeding percentage of account (10-100%)
+
+**Operational Exits:**
+- **Grid Rebalancing**: Cancel orders and recreate grid when price moves outside range
+- **Graceful Shutdown**: Cancel pending orders on bot termination (positions preserved by default)
+
+All exit strategies are configurable per bot and disabled by default for safety.
 
 ## 🔧 Development
 

@@ -302,3 +302,159 @@ class HyperliquidAdapter(ExchangeAdapter):
             return True
         except:
             return False
+    
+    async def get_positions(self) -> List['Position']:
+        """Get all current positions from Hyperliquid"""
+        if not self.is_connected:
+            return []
+            
+        try:
+            # Import Position here to avoid circular imports
+            from interfaces.strategy import Position
+            
+            # Get user state which includes positions
+            user_state = self.info.user_state(self.exchange.wallet.address)
+            positions = []
+            
+            # Parse positions from user state
+            if "assetPositions" in user_state:
+                for pos_info in user_state["assetPositions"]:
+                    if float(pos_info.get("position", {}).get("szi", 0)) != 0:
+                        position_size = float(pos_info["position"]["szi"])
+                        entry_price = float(pos_info["position"]["entryPx"] or 0)
+                        
+                        # Get current price for PnL calculation
+                        current_price = await self.get_market_price(pos_info["position"]["coin"])
+                        current_value = abs(position_size) * current_price
+                        
+                        # Calculate unrealized PnL
+                        if entry_price > 0:
+                            unrealized_pnl = position_size * (current_price - entry_price)
+                        else:
+                            unrealized_pnl = 0.0
+                        
+                        position = Position(
+                            asset=pos_info["position"]["coin"],
+                            size=position_size,
+                            entry_price=entry_price,
+                            current_value=current_value,
+                            unrealized_pnl=unrealized_pnl,
+                            timestamp=time.time()
+                        )
+                        positions.append(position)
+            
+            return positions
+            
+        except Exception as e:
+            print(f"❌ Error getting positions: {e}")
+            return []
+    
+    async def close_position(self, asset: str, size: Optional[float] = None) -> bool:
+        """Close a position by placing a market order"""
+        if not self.is_connected:
+            return False
+            
+        try:
+            # Get current positions to determine position details
+            positions = await self.get_positions()
+            target_position = None
+            
+            for pos in positions:
+                if pos.asset == asset:
+                    target_position = pos
+                    break
+            
+            if not target_position:
+                print(f"❌ No position found for {asset}")
+                return False
+            
+            # Determine close size
+            if size is None:
+                close_size = abs(target_position.size)
+            else:
+                close_size = min(size, abs(target_position.size))
+            
+            # Determine side (opposite of current position)
+            close_side = "A" if target_position.size > 0 else "B"  # A=Ask (sell), B=Bid (buy)
+            
+            # Place market order to close position
+            order_request = {
+                "coin": asset,
+                "is_buy": close_side == "B",
+                "sz": close_size,
+                "limit_px": None,  # Market order
+                "order_type": {"limit": {"tif": "Ioc"}},  # Immediate or Cancel
+                "reduce_only": True
+            }
+            
+            result = self.exchange.order(order_request)
+            
+            if result and result.get("status") == "ok":
+                print(f"✅ Position close order placed: {close_size} {asset}")
+                return True
+            else:
+                print(f"❌ Failed to close position: {result}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error closing position {asset}: {e}")
+            return False
+    
+    async def get_account_metrics(self) -> Dict[str, Any]:
+        """Get account-level metrics for risk assessment"""
+        if not self.is_connected:
+            return {
+                "total_value": 0.0,
+                "total_pnl": 0.0,
+                "unrealized_pnl": 0.0,
+                "realized_pnl": 0.0,
+                "drawdown_pct": 0.0
+            }
+            
+        try:
+            # Get user state
+            user_state = self.info.user_state(self.exchange.wallet.address)
+            
+            # Calculate account metrics
+            total_value = 0.0
+            unrealized_pnl = 0.0
+            
+            # Get cross margin summary for total account value
+            if "crossMarginSummary" in user_state:
+                margin_summary = user_state["crossMarginSummary"]
+                total_value = float(margin_summary.get("accountValue", 0))
+                unrealized_pnl = float(margin_summary.get("totalMarginUsed", 0))
+            
+            # Get positions for detailed PnL
+            positions = await self.get_positions()
+            position_pnl = sum(pos.unrealized_pnl for pos in positions)
+            
+            # Calculate drawdown (simplified - would need historical high water mark)
+            # For now, use unrealized PnL as proxy
+            total_pnl = position_pnl
+            
+            # Estimate drawdown percentage (this would be more sophisticated in production)
+            if total_value > 0:
+                drawdown_pct = max(0, -total_pnl / total_value * 100) if total_pnl < 0 else 0.0
+            else:
+                drawdown_pct = 0.0
+            
+            return {
+                "total_value": total_value,
+                "total_pnl": total_pnl,
+                "unrealized_pnl": unrealized_pnl,
+                "realized_pnl": 0.0,  # Would need to track this separately
+                "drawdown_pct": drawdown_pct,
+                "positions_count": len(positions),
+                "largest_position_pct": max([abs(pos.current_value) / total_value * 100 for pos in positions], default=0.0) if total_value > 0 else 0.0
+            }
+            
+        except Exception as e:
+            print(f"❌ Error getting account metrics: {e}")
+            return {
+                "total_value": 0.0,
+                "total_pnl": 0.0,
+                "unrealized_pnl": 0.0,
+                "realized_pnl": 0.0,
+                "drawdown_pct": 0.0
+            }

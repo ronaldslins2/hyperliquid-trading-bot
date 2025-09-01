@@ -344,7 +344,7 @@ wheels = [
 ]
 
 [[package]]
-name = "hyperliquid-trading-framework"
+name = "hyperliquid-trading-bot"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
