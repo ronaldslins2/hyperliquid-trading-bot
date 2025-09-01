@@ -1,6 +1,6 @@
 ## Extensible grid trading bot for [Hyperliquid DEX](https://hyperliquid.xyz)
 
-> ⚠️ This software is for educational and research purposes. Trading cryptocurrencies involves substantial risk of loss. Never trade with funds you cannot afford to lose. Always thoroughly test strategies on testnet before live deployment.**
+> ⚠️ This software is for educational and research purposes. Trading cryptocurrencies involves substantial risk of loss. Never trade with funds you cannot afford to lose. Always thoroughly test strategies on testnet before live deployment.
 
 This project is under active development. Feel free to submit questions, suggestions, and issues through GitHub.
 
