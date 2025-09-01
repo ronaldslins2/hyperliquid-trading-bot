@@ -7,7 +7,7 @@ This project is under active development. Feel free to submit questions, suggest
 ## 🚀 Quick start
 
 ### **Prerequisites**
-- [UV Package Manager](https://github.com/astral-sh/uv)
+- [uv package manager](https://github.com/astral-sh/uv)
 - Hyperliquid testnet account with testnet funds (see [Chainstack Hyperliquid faucet](https://faucet.chainstack.com/hyperliquid-testnet-faucet))
 
 ### **Installation**
@@ -49,30 +49,6 @@ uv run src/run_bot.py --validate
 uv run src/run_bot.py bots/btc_conservative.yaml
 ```
 
-## 📚 Learning examples
-
-Master the Hyperliquid API with standalone educational scripts:
-
-```bash
-# Authentication and connection
-uv run learning_examples/01_authentication/basic_connection.py
-
-# Market data and pricing
-uv run learning_examples/02_market_data/get_all_prices.py
-uv run learning_examples/02_market_data/get_market_metadata.py
-
-# Account information
-uv run learning_examples/03_account_info/get_user_state.py
-uv run learning_examples/03_account_info/get_open_orders.py
-
-# Trading operations
-uv run learning_examples/04_trading/place_limit_order.py
-uv run learning_examples/04_trading/cancel_orders.py
-
-# Real-time data
-uv run learning_examples/05_websockets/realtime_prices.py
-```
-
 ## ⚙️ Configuration
 
 Bot configurations use YAML format with comprehensive parameter documentation:
@@ -101,10 +77,34 @@ monitoring:
   log_level: "INFO"       # DEBUG/INFO/WARNING/ERROR
 ```
 
+## 📚 Learning examples
+
+Master the Hyperliquid API with standalone educational scripts:
+
+```bash
+# Authentication and connection
+uv run learning_examples/01_authentication/basic_connection.py
+
+# Market data and pricing
+uv run learning_examples/02_market_data/get_all_prices.py
+uv run learning_examples/02_market_data/get_market_metadata.py
+
+# Account information
+uv run learning_examples/03_account_info/get_user_state.py
+uv run learning_examples/03_account_info/get_open_orders.py
+
+# Trading operations
+uv run learning_examples/04_trading/place_limit_order.py
+uv run learning_examples/04_trading/cancel_orders.py
+
+# Real-time data
+uv run learning_examples/05_websockets/realtime_prices.py
+```
+
 ## 🔧 Development
 
 ### **Package management**
-This project uses [UV](https://github.com/astral-sh/uv) for fast, reliable dependency management:
+This project uses [uv](https://github.com/astral-sh/uv) for fast, reliable dependency management:
 
 ```bash
 uv sync              # Install/sync dependencies
