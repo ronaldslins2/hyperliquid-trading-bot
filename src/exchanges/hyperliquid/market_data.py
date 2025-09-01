@@ -38,6 +38,9 @@ class HyperliquidMarketData:
         self.reconnect_delay = 5.0
         self.max_reconnect_attempts = 10
         
+        # Task management
+        self.message_handler_task = None
+        
         # Endpoint router for smart routing
         self.endpoint_router = get_endpoint_router(testnet)
         
@@ -55,8 +58,9 @@ class HyperliquidMarketData:
             self.ws = await websockets.connect(ws_url)
             self.running = True
             
-            # Start message handler
-            asyncio.create_task(self._message_handler())
+            # Only start message handler if not already running
+            if self.message_handler_task is None or self.message_handler_task.done():
+                self.message_handler_task = asyncio.create_task(self._message_handler())
             
             print(f"✅ Connected to Hyperliquid WebSocket ({'testnet' if self.testnet else 'mainnet'})")
             print(f"📡 Using WebSocket: {ws_url}")
@@ -69,6 +73,15 @@ class HyperliquidMarketData:
     async def disconnect(self) -> None:
         """Disconnect from WebSocket"""
         self.running = False
+        
+        # Cancel message handler task
+        if self.message_handler_task and not self.message_handler_task.done():
+            self.message_handler_task.cancel()
+            try:
+                await self.message_handler_task
+            except asyncio.CancelledError:
+                pass
+        
         if self.ws:
             await self.ws.close()
             self.ws = None
@@ -125,10 +138,10 @@ class HyperliquidMarketData:
         while self.running:
             try:
                 if not self.ws:
-                    # Attempt reconnection
+                    # Attempt reconnection (without calling self.connect() to avoid task recursion)
                     if reconnect_attempts < self.max_reconnect_attempts:
                         print(f"🔄 Reconnecting to WebSocket (attempt {reconnect_attempts + 1})")
-                        if await self.connect():
+                        if await self._reconnect():
                             reconnect_attempts = 0
                             # Re-subscribe to assets
                             await self._resubscribe_all()
@@ -205,6 +218,27 @@ class HyperliquidMarketData:
                 
                 except (ValueError, TypeError) as e:
                     print(f"❌ Invalid price data for {asset}: {e}")
+    
+    async def _reconnect(self) -> bool:
+        """Reconnect to WebSocket without creating new tasks"""
+        try:
+            import websockets
+            
+            # Get WebSocket URL from endpoint router
+            ws_url = self.endpoint_router.get_endpoint_for_method("subscribe_price")
+            if not ws_url:
+                # Fallback to standard testnet WebSocket URL
+                ws_url = "wss://api.hyperliquid-testnet.xyz/ws" if self.testnet else "wss://api.hyperliquid.xyz/ws"
+            
+            self.ws = await websockets.connect(ws_url)
+            
+            print(f"✅ Connected to Hyperliquid WebSocket ({'testnet' if self.testnet else 'mainnet'})")
+            print(f"📡 Using WebSocket: {ws_url}")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Failed to reconnect to WebSocket: {e}")
+            return False
     
     async def _resubscribe_all(self) -> None:
         """Re-subscribe to all assets after reconnection"""
