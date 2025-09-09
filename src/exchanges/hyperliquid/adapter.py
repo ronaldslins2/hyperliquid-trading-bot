@@ -49,22 +49,29 @@ class HyperliquidAdapter(ExchangeAdapter):
             if not info_url:
                 raise RuntimeError("No healthy info endpoint available")
             
-            # Remove /info suffix if present (SDK adds it automatically)
-            base_url = info_url.replace('/info', '') if info_url.endswith('/info') else info_url
+            # Get the exchange endpoint from router
+            exchange_url = self.endpoint_router.get_endpoint_for_method("cancel_order")
+            if not exchange_url:
+                raise RuntimeError("No healthy exchange endpoint available")
+            
+            # Remove /info and /exchange suffixes (SDK adds them automatically)
+            info_base_url = info_url.replace('/info', '') if info_url.endswith('/info') else info_url
+            exchange_base_url = exchange_url.replace('/exchange', '') if exchange_url.endswith('/exchange') else exchange_url
             
             # Create wallet from private key
             wallet = Account.from_key(self.private_key)
             
-            # Initialize SDK components with smart endpoint routing
-            self.info = Info(base_url, skip_ws=True)
-            self.exchange = Exchange(wallet, base_url)
+            # Initialize SDK components with proper endpoint routing
+            self.info = Info(info_base_url, skip_ws=True)
+            self.exchange = Exchange(wallet, exchange_base_url)
             
             # Test connection
             user_state = self.info.user_state(self.exchange.wallet.address)
             
             self.is_connected = True
             print(f"✅ Connected to Hyperliquid ({'testnet' if self.testnet else 'mainnet'})")
-            print(f"📡 Using endpoint: {info_url}")
+            print(f"📡 Info endpoint: {info_url}")
+            print(f"💱 Exchange endpoint: {exchange_url}")
             print(f"🔑 Wallet address: {self.exchange.wallet.address}")
             return True
             
@@ -206,13 +213,41 @@ class HyperliquidAdapter(ExchangeAdapter):
             # Convert to int (Hyperliquid uses integer order IDs)
             oid = int(exchange_order_id)
             
-            result = self.exchange.cancel_order(oid)
+            # Find the asset name for this order by querying open orders
+            open_orders = self.info.open_orders(self.account.address)
+            target_order = None
+            
+            for order in open_orders:
+                if order.get('oid') == oid:
+                    target_order = order
+                    break
+            
+            if not target_order:
+                print(f"❌ Order {exchange_order_id} not found in open orders")
+                return False
+            
+            asset_name = target_order.get('coin')
+            if not asset_name:
+                print(f"❌ Could not determine asset for order {exchange_order_id}")
+                return False
+            
+            # Use the correct SDK method: cancel(name, oid)
+            result = self.exchange.cancel(name=asset_name, oid=oid)
             
             # Check if cancellation was successful
-            if result and "status" in result:
-                return result["status"] == "ok"
-            
-            return False
+            if result and isinstance(result, dict) and result.get("status") == "ok":
+                response_data = result.get("response", {}).get("data", {})
+                statuses = response_data.get("statuses", [])
+                
+                if statuses and statuses[0] == "success":
+                    print(f"✅ Order {exchange_order_id} cancelled successfully")
+                    return True
+                else:
+                    print(f"❌ Cancel failed with status: {statuses}")
+                    return False
+            else:
+                print(f"❌ Cancel request failed: {result}")
+                return False
             
         except Exception as e:
             print(f"❌ Error cancelling order {exchange_order_id}: {e}")
