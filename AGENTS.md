@@ -148,6 +148,10 @@ ls bots/*.yaml
   - Trading: Order placement and management
   - WebSockets: Real-time data streams
 
+  **Development style for learning examples**:
+  - Place imports always at the top
+  - Use short docstrings
+
 **Usage:**
 ```bash
 # Run any learning example directly

@@ -1,123 +1,90 @@
-#!/usr/bin/env python3
 """
-Get All Market Prices
-
-Demonstrates:
-- info.all_mids() SDK method  
-- Raw HTTP call to /info with type: allMids
-- Parsing price data for specific assets
-
-TRADING MODES:
-- SPOT: Returns spot prices for immediate settlement
-- PERPS: Returns perpetual futures prices (may differ from spot due to funding rates)
-- This API returns both spot and perps prices in the same call
+Fetches current market prices for all assets using SDK and raw HTTP API.
+Compares results to verify data consistency between methods.
 """
 
 import asyncio
+import os
+from typing import Dict, Optional
+
+from dotenv import load_dotenv
 import httpx
+from hyperliquid.info import Info
 
+load_dotenv()
 
-async def method_1_sdk():
+# You can only use this endpoint on the official Hyperliquid public API.
+# It is not available through Chainstack, as the open-source node implementation does not support it yet.
+BASE_URL = os.getenv("HYPERLIQUID_TESTNET_PUBLIC_BASE_URL")
+ASSETS_TO_SHOW = ["BTC", "ETH", "SOL", "DOGE", "AVAX"]
+
+async def method_1_sdk() -> Optional[Dict[str, str]]:
     """Method 1: Using Hyperliquid Python SDK"""
-    
-    print("🔧 Method 1: Hyperliquid SDK")
+    print("Method 1: Hyperliquid SDK")
     print("-" * 30)
     
     try:
-        from hyperliquid.info import Info
-        
-        # Create Info object (no authentication needed for market data)
-        info = Info("https://api.hyperliquid-testnet.xyz", skip_ws=True)
-        
-        # Get all market prices  
+        info = Info(BASE_URL, skip_ws=True)
         all_prices = info.all_mids()
         
-        print(f"📊 Got prices for {len(all_prices)} assets")
-        
-        # Show popular assets
-        popular_assets = ["BTC", "ETH", "SOL", "DOGE", "AVAX"]
-        for asset in popular_assets:
+        print(f"Got prices for {len(all_prices)} assets")
+        for asset in ASSETS_TO_SHOW:
             if asset in all_prices:
                 price = float(all_prices[asset])
                 print(f"   {asset}: ${price:,.2f}")
                 
         return all_prices
         
-    except ImportError:
-        print("❌ Install SDK: uv add hyperliquid-python-sdk")
-        return None
     except Exception as e:
-        print(f"❌ SDK method failed: {e}")
+        print(f"SDK method failed: {e}")
         return None
 
-
-async def method_2_http():
-    """Method 2: Raw HTTP call"""
-    
-    print("\n🌐 Method 2: Raw HTTP")
-    print("-" * 25)
+async def method_2_raw_api() -> Optional[Dict[str, str]]:
+    """Method 2: Raw HTTP API call"""
+    print("\nMethod 2: Raw HTTP API")
+    print("-" * 30)
     
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://api.hyperliquid-testnet.xyz/info",
+                f"{BASE_URL}/info",
                 json={"type": "allMids"},
                 headers={"Content-Type": "application/json"}
             )
             
             if response.status_code == 200:
                 all_prices = response.json()
-                print(f"📊 HTTP: Got prices for {len(all_prices)} assets")
+                print(f"Got prices for {len(all_prices)} assets")
                 
-                # Show same popular assets
-                popular_assets = ["BTC", "ETH", "SOL", "DOGE", "AVAX"]
-                for asset in popular_assets:
+                for asset in ASSETS_TO_SHOW:
                     if asset in all_prices:
                         price = float(all_prices[asset])
                         print(f"   {asset}: ${price:,.2f}")
                         
                 return all_prices
             else:
-                print(f"❌ HTTP failed: {response.status_code}")
+                print(f"HTTP failed: {response.status_code}")
                 return None
                 
     except Exception as e:
-        print(f"❌ HTTP method failed: {e}")
+        print(f"HTTP method failed: {e}")
         return None
 
-
-async def compare_methods():
-    """Compare SDK vs HTTP methods"""
+async def main() -> None:
+    print("Hyperliquid Market Prices")
+    print("=" * 40)
     
-    print("\n🔍 Comparing Methods")
-    print("-" * 25)
-    
-    # Get data from both methods
     sdk_prices = await method_1_sdk()
-    http_prices = await method_2_http()
+    http_prices = await method_2_raw_api()
     
     if sdk_prices and http_prices:
-        # Compare a few assets
-        test_assets = ["BTC", "ETH", "SOL"]
-        
-        print("📊 Price comparison:")
-        for asset in test_assets:
+        print("\nComparison:")
+        for asset in ["BTC", "ETH", "SOL"]:
             if asset in sdk_prices and asset in http_prices:
                 sdk_price = float(sdk_prices[asset])
                 http_price = float(http_prices[asset])
-                
-                match = "✅" if sdk_price == http_price else "❌"
+                match = "MATCH" if sdk_price == http_price else "DIFF"
                 print(f"   {asset}: SDK=${sdk_price:,.2f} | HTTP=${http_price:,.2f} {match}")
-
-
-async def main():
-    """Demonstrate getting all market prices"""
-    
-    print("📊 Hyperliquid Market Prices")
-    print("=" * 40)
-    
-    await compare_methods()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -147,6 +147,10 @@ ls bots/*.yaml
   - Account Info: Balance and position queries
   - Trading: Order placement and management
   - WebSockets: Real-time data streams
+  
+  **Development style for learning examples**:
+  - Place imports always at the top
+  - Use short docstrings
 
 **Usage:**
 ```bash
