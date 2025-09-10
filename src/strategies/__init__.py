@@ -20,7 +20,7 @@ STRATEGY_REGISTRY = {
 def create_strategy(strategy_type: str, config: dict):
     """
     Factory function to create strategies.
-    
+
     Makes it easy for newbies to add new strategies:
     1. Implement TradingStrategy interface
     2. Add to STRATEGY_REGISTRY
@@ -28,14 +28,12 @@ def create_strategy(strategy_type: str, config: dict):
     """
     if strategy_type not in STRATEGY_REGISTRY:
         available = ", ".join(STRATEGY_REGISTRY.keys())
-        raise ValueError(f"Unknown strategy type: {strategy_type}. Available: {available}")
-    
+        raise ValueError(
+            f"Unknown strategy type: {strategy_type}. Available: {available}"
+        )
+
     strategy_class = STRATEGY_REGISTRY[strategy_type]
     return strategy_class(config)
 
 
-__all__ = [
-    "BasicGridStrategy",
-    "STRATEGY_REGISTRY",
-    "create_strategy"
-]
+__all__ = ["BasicGridStrategy", "STRATEGY_REGISTRY", "create_strategy"]

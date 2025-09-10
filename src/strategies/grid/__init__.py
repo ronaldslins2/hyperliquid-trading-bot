@@ -7,9 +7,4 @@ This module contains grid-based trading strategies:
 
 from .basic_grid import BasicGridStrategy, GridState, GridLevel, GridConfig
 
-__all__ = [
-    "BasicGridStrategy",
-    "GridState",
-    "GridLevel",
-    "GridConfig"
-]
+__all__ = ["BasicGridStrategy", "GridState", "GridLevel", "GridConfig"]

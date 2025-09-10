@@ -8,7 +8,4 @@ Separated from business logic for clean architecture.
 from .adapter import HyperliquidAdapter
 from .market_data import HyperliquidMarketData
 
-__all__ = [
-    "HyperliquidAdapter",
-    "HyperliquidMarketData"
-]
+__all__ = ["HyperliquidAdapter", "HyperliquidMarketData"]
