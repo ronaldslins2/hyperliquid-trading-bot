@@ -13,16 +13,9 @@ import websockets
 load_dotenv()
 
 WS_URL = os.getenv("HYPERLIQUID_TESTNET_PUBLIC_WS_URL")
-LEADER_ADDRESS = "0x..."  # Replace with leader's wallet address
-
-running = False
-
-
-def signal_handler(signum, frame):
-    """Handle Ctrl+C gracefully"""
-    global running
-    print("\nShutting down...")
-    running = False
+LEADER_ADDRESS = (
+    "0x..."  # Replace with leader's wallet address
+)
 
 
 def detect_market_type(coin_field):
@@ -30,37 +23,42 @@ def detect_market_type(coin_field):
     if coin_field.startswith("@"):
         # @{index} format = SPOT trading
         result = "SPOT"
-        print(f"DEBUG: {coin_field} -> SPOT (@index format)")
         return result
     elif "/" in coin_field:
         # Pairs like PURR/USDC = SPOT trading
         result = "SPOT"
-        print(f"DEBUG: {coin_field} -> SPOT (pair format)")
         return result
     else:
         # Direct symbols like SOL, BTC, ETH = PERP trading
         result = "PERP"
-        print(f"DEBUG: {coin_field} -> PERP (direct symbol)")
         return result
 
 
-def format_order(order_data):
-    """Format order data for display"""
-    order = order_data.get("order", {})
-    status = order_data.get("status", "unknown")
-
-    coin_field = order.get("coin", "N/A")
-    market_type = detect_market_type(coin_field)
-
-    return {
-        "asset": coin_field,
-        "market_type": market_type,
-        "side": "BUY" if order.get("side") == "B" else "SELL",
-        "size": order.get("sz", "N/A"),
-        "price": order.get("limitPx", "N/A"),
-        "order_id": order.get("oid", "N/A"),
-        "status": status
-    }
+def format_trade_data(data, data_type):
+    """Format order or fill data for display"""
+    if data_type == "order":
+        order = data.get("order", {})
+        coin_field = order.get("coin", "N/A")
+        return {
+            "asset": coin_field,
+            "market_type": detect_market_type(coin_field),
+            "side": "BUY" if order.get("side") == "B" else "SELL",
+            "size": order.get("sz", "N/A"),
+            "price": order.get("limitPx", "N/A"),
+            "order_id": order.get("oid", "N/A"),
+            "status": data.get("status", "unknown"),
+        }
+    else:  # fill
+        coin_field = data.get("coin", "N/A")
+        return {
+            "asset": coin_field,
+            "market_type": detect_market_type(coin_field),
+            "side": "BUY" if data.get("side") == "B" else "SELL",
+            "size": data.get("sz", "N/A"),
+            "price": data.get("px", "N/A"),
+            "fee": data.get("fee", "N/A"),
+            "pnl": data.get("closedPnl", "0"),
+        }
 
 
 async def handle_order_events(data):
@@ -68,27 +66,40 @@ async def handle_order_events(data):
     channel = data.get("channel")
 
     if channel == "orderUpdates":
-        orders = data.get("data", [])
-        for order_update in orders:
-            order_info = format_order(order_update)
-            status_emoji = {"open": "🟢", "canceled": "❌", "filled": "✅"}.get(order_info['status'], "📋")
+        for order_update in data.get("data", []):
+            info = format_trade_data(order_update, "order")
+            status_emoji = {"open": "🟢", "canceled": "❌", "filled": "✅"}.get(info["status"], "📋")
+            print(f"{status_emoji} {info['status'].upper()}: {info['side']} {info['size']} {info['asset']} @ {info['price']} [{info['market_type']}] (ID: {info['order_id']})")
 
-            print(f"{status_emoji} {order_info['status'].upper()}: {order_info['side']} {order_info['size']} {order_info['asset']} @ {order_info['price']} [{order_info['market_type']}] (ID: {order_info['order_id']})")
-
-    elif channel == "userEvents":
-        events = data.get("data", [])
-        for event in events:
-            if event.get("fills"):
-                for fill in event["fills"]:
-                    coin_field = fill.get("coin", "N/A")
-                    market_type = detect_market_type(coin_field)
-                    side = "BUY" if fill.get("side") == "B" else "SELL"
-
-                    pnl_text = f" | PnL: {fill.get('closedPnl', '0')}" if float(fill.get('closedPnl', '0')) != 0 else ""
-                    print(f"💰 FILL: {side} {fill.get('sz', 'N/A')} {coin_field} @ {fill.get('px', 'N/A')} [{market_type}] (Fee: {fill.get('fee', 'N/A')}){pnl_text}")
+    elif channel == "user":
+        for fill in data.get("data", {}).get("fills", []):
+                info = format_trade_data(fill, "fill")
+                pnl_text = f" | PnL: {info['pnl']}" if float(info["pnl"]) != 0 else ""
+                print(f"💰 FILL: {info['side']} {info['size']} {info['asset']} @ {info['price']} [{info['market_type']}] (Fee: {info['fee']}){pnl_text}")
 
     elif channel == "subscriptionResponse":
         print("✅ Subscription confirmed")
+
+
+async def unsubscribe_from_feeds(websocket, leader_address):
+    """Unsubscribe from all feeds"""
+    try:
+        order_unsubscribe = {
+            "method": "unsubscribe",
+            "subscription": {"type": "orderUpdates", "user": leader_address},
+        }
+
+        events_unsubscribe = {
+            "method": "unsubscribe",
+            "subscription": {"type": "userEvents", "user": leader_address},
+        }
+
+        await websocket.send(json.dumps(order_unsubscribe))
+        await websocket.send(json.dumps(events_unsubscribe))
+        print("📤 Unsubscribed from all feeds")
+
+    except Exception as e:
+        print(f"⚠️ Unsubscribe failed: {e}")
 
 
 async def ping_websocket(websocket):
@@ -96,7 +107,8 @@ async def ping_websocket(websocket):
     try:
         while True:
             await asyncio.sleep(30)
-            await websocket.ping()
+            ping_message = {"method": "ping"}
+            await websocket.send(json.dumps(ping_message))
     except asyncio.CancelledError:
         pass
     except Exception as e:
@@ -105,13 +117,19 @@ async def ping_websocket(websocket):
 
 async def monitor_leader_orders():
     """Connect to WebSocket and monitor leader's order activity"""
-    global running
-
     if not LEADER_ADDRESS or LEADER_ADDRESS == "0x...":
         print("❌ Please set LEADER_ADDRESS in the script")
         return
 
-    print(f"🔗 Connecting to {WS_URL}")
+    print(f"Connecting to {WS_URL}")
+
+    shutdown_event = asyncio.Event()
+
+    def signal_handler(signum, frame):
+        del signum, frame
+        print("\nShutting down...")
+        shutdown_event.set()
+
     signal.signal(signal.SIGINT, signal_handler)
 
     try:
@@ -121,42 +139,37 @@ async def monitor_leader_orders():
             # Subscribe to order updates
             order_subscription = {
                 "method": "subscribe",
-                "subscription": {
-                    "type": "orderUpdates",
-                    "user": LEADER_ADDRESS
-                }
+                "subscription": {"type": "orderUpdates", "user": LEADER_ADDRESS},
             }
 
             # Subscribe to user events (fills)
             events_subscription = {
                 "method": "subscribe",
-                "subscription": {
-                    "type": "userEvents",
-                    "user": LEADER_ADDRESS
-                }
+                "subscription": {"type": "userEvents", "user": LEADER_ADDRESS},
             }
 
             await websocket.send(json.dumps(order_subscription))
             await websocket.send(json.dumps(events_subscription))
 
-            print(f"📊 Monitoring orders for: {LEADER_ADDRESS}")
+            print(f"Monitoring orders for: {LEADER_ADDRESS}")
             print("=" * 80)
-
-            running = True
 
             # Start ping task
             ping_task = asyncio.create_task(ping_websocket(websocket))
 
             try:
                 async for message in websocket:
-                    if not running:
+                    if shutdown_event.is_set():
                         break
 
                     try:
                         data = json.loads(message)
 
+                        if data.get("channel") == "pong":
+                            print(f"Ping response: {json.dumps(data)}")
+
                         # Print raw WebSocket messages for debugging
-                        if data.get("channel") in ["orderUpdates", "userEvents"]:
+                        if data.get("channel") in ["orderUpdates", "user"]:
                             print(f"RAW MESSAGE: {json.dumps(data, indent=2)}")
 
                         await handle_order_events(data)
@@ -166,13 +179,14 @@ async def monitor_leader_orders():
                         print(f"❌ Error: {e}")
             finally:
                 ping_task.cancel()
+                await unsubscribe_from_feeds(websocket, LEADER_ADDRESS)
 
     except websockets.exceptions.ConnectionClosed:
-        print("🔌 WebSocket connection closed")
+        print("WebSocket connection closed")
     except Exception as e:
         print(f"❌ WebSocket error: {e}")
     finally:
-        print("👋 Disconnected")
+        print("Disconnected")
 
 
 async def main():
